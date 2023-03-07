@@ -1,0 +1,32 @@
+# Misc
+*.pyc
+*/debug.py
+*/tutorial.py
+
+# Data
+data/*/*
+*/data
+
+*.mid
+
+*.npy
+*.npz
+*.hi
+
+*.json
+*.jsonl
+*.csv
+*.txt
+
+*.jpg
+*.png
+*.pdf
+
+*.zip
+
+# Models
+*.pt
+
+# sh
+*.err
+*.out
