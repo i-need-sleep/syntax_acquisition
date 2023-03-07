@@ -31,8 +31,8 @@ def train(args):
         elif args.dataset == 'openwebtext':
             # sample k subsets from openwebtext
             data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
-            data_paths = random.sample(data_paths, 3)
-            train_data_paths, dev_data_paths = data_paths[: 2], data_paths[2:]
+            data_paths = random.sample(data_paths, 3900)
+            train_data_paths, dev_data_paths = data_paths[: 3500], data_paths[3500:]
         else:
             raise NotImplementedError
         
@@ -44,19 +44,21 @@ def train(args):
                 'train_data_paths': train_data_paths,
                 'dev_data_paths': dev_data_paths,
             }, f)
+
+    xz = args.dataset == 'openwebtext'
     
     # Retrieve the tokenizer, or train a new one
     toknizer_path = f'{globals.TOKENIZER_CHECKPOINT_DIR}/{save_name}'
     if os.path.exists(toknizer_path):
         print(f'Loading tokenizer: {toknizer_path}')
-        tokenizer = transformers.AutoTokenizer.from_pretrained(toknizer_path)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(toknizer_path, xz=xz)
     else:
         print(f'Training tokenizer: {toknizer_path}')
-        tokenizer = utils.train_tokenizer.train_tokenizer(train_data_paths, save_name)
+        tokenizer = utils.train_tokenizer.train_tokenizer(train_data_paths, save_name, xz=xz)
 
     # Make datasets
-    train_set = utils.dataset.LMDataset(train_data_paths, tokenizer)
-    dev_set = utils.dataset.LMDataset(dev_data_paths, tokenizer)
+    train_set = utils.dataset.LMDataset(train_data_paths, tokenizer, xz=xz)
+    dev_set = utils.dataset.LMDataset(dev_data_paths, tokenizer, xz=xz)
     data_collator = transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False)
 
     # Initialize the model

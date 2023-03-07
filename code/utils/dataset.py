@@ -1,3 +1,5 @@
+import lzma
+
 import torch
 import transformers
 
@@ -5,13 +7,14 @@ import utils.globals as globals
 
 
 class LMDataset(torch.utils.data.Dataset):
-    def __init__(self, data_paths, tokenizer, debug=False):
+    def __init__(self, data_paths, tokenizer, debug=False, xz=False):
         self.context_length = 128
         self.data_paths = data_paths
         self.tokenizer = tokenizer 
         self.debug = debug
+        self.xz = xz
         
-        print(f'Tokenizing texts: {data_paths}')
+        print(f'Tokenizing texts:')
         self.data = self.process()
         print(f'Tokenized #lines: {len(self)}, #tokens: {len(self) * self.context_length}')
 
@@ -19,9 +22,18 @@ class LMDataset(torch.utils.data.Dataset):
         # Piece all files into a long string
         data_str = ''
         for path in self.data_paths:
-            # TO-DO: Read lines.
-            with open(path, 'r', encoding="utf-8") as f:
-                data_str += f'{f.read()} '
+            if self.xz:
+                with lzma.open(path, 'r') as f:
+                    for line in f:
+                        line_text = line.decode('UTF-8').strip()
+                        if line_text != '\n':
+                            data_str += f'{line_text} '
+            else:
+                with open(path, 'r', encoding="utf-8") as f:
+                    for line_text in f.readlines():
+                        line_text = line_text.strip()
+                        if line_text != '\n':
+                            data_str += f'{line_text} '
         
         if self.debug:
             data_str = data_str[:5000]
