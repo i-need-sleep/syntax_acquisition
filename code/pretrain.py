@@ -75,7 +75,7 @@ def train(args):
     # Set up the trainer
     checkpoint_dir = f'{globals.MODEL_CHECKPOINT_DIR}/{save_name}'
     trainer_args = transformers.TrainingArguments(
-        output_dir='checkpoint_dir',
+        output_dir=checkpoint_dir,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
         evaluation_strategy="steps",
