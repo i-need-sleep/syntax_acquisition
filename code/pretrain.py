@@ -48,12 +48,12 @@ def train(args):
     xz = args.dataset == 'openwebtext'
     
     # Retrieve the tokenizer, or train a new one
-    toknizer_path = f'{globals.TOKENIZER_CHECKPOINT_DIR}/{save_name}'
-    if os.path.exists(toknizer_path):
-        print(f'Loading tokenizer: {toknizer_path}')
-        tokenizer = transformers.AutoTokenizer.from_pretrained(toknizer_path, xz=xz)
+    tokenizer_path = f'{globals.TOKENIZER_CHECKPOINT_DIR}/{save_name}'
+    if os.path.exists(tokenizer_path):
+        print(f'Loading tokenizer: {tokenizer_path}')
+        tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_path, xz=xz)
     else:
-        print(f'Training tokenizer: {toknizer_path}')
+        print(f'Training tokenizer: {tokenizer_path}')
         tokenizer = utils.train_tokenizer.train_tokenizer(train_data_paths, save_name, xz=xz)
 
     # Make datasets
@@ -76,13 +76,14 @@ def train(args):
     checkpoint_dir = f'{globals.MODEL_CHECKPOINT_DIR}/{save_name}'
     trainer_args = transformers.TrainingArguments(
         output_dir=checkpoint_dir,
+        checkpoint_dir=checkpoint_dir,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
         evaluation_strategy="steps",
         eval_steps=5_000,
         logging_steps=5_000,
         gradient_accumulation_steps=8,
-        num_train_epochs=1,
+        num_train_epochs=20,
         weight_decay=0.1,
         warmup_steps=1_000,
         lr_scheduler_type="cosine",
