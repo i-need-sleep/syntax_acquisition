@@ -31,8 +31,8 @@ def train(args):
         elif args.dataset == 'openwebtext':
             # sample k subsets from openwebtext
             data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
-            data_paths = random.sample(data_paths, 3000)
-            train_data_paths, dev_data_paths = data_paths[: 2700], data_paths[2700:]
+            data_paths = random.sample(data_paths, 1000)
+            train_data_paths, dev_data_paths = data_paths[: 900], data_paths[900:]
         else:
             raise NotImplementedError
         
