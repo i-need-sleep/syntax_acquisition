@@ -31,8 +31,8 @@ def train(args):
         elif args.dataset == 'openwebtext':
             # sample k subsets from openwebtext
             data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
-            data_paths = random.sample(data_paths, 1000)
-            train_data_paths, dev_data_paths = data_paths[: 900], data_paths[900:]
+            data_paths = random.sample(data_paths, 320)
+            train_data_paths, dev_data_paths = data_paths[: len(data_paths)//10*9], data_paths[len(data_paths)//10*9:]
         else:
             raise NotImplementedError
         
@@ -82,7 +82,7 @@ def train(args):
         eval_steps=5_000,
         logging_steps=5_000,
         gradient_accumulation_steps=8,
-        num_train_epochs=20,
+        num_train_epochs=50,
         weight_decay=0.1,
         warmup_steps=1_000,
         lr_scheduler_type="cosine",
