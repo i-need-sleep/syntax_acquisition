@@ -27,6 +27,7 @@ def subsample(args):
         subsample = subsample_sent_len(lens, args)
     elif args.match_type == 'construct':
         consts = get_consts_from_config(args.load_babylm_config, args)
+        subsample = subsample_consts(consts, args)
     else:
         raise NotImplementedError
     
@@ -141,7 +142,6 @@ def subsample_sent_len(lens, args):
                 if line_text != '\n':
                     text += f'{line_text} '
         
-        # Filter out OOV sents
         if args.debug:
             text = text[:1000]
         sents = nltk.sent_tokenize(text)
@@ -181,8 +181,44 @@ def get_consts_from_config(config, args):
             for sent in doc.sentences:
                 const = sent.constituency
                 const = utils.data_utils.tree_to_zss(const)
-                consts.append(const)
+                consts.append(str(const))
     return consts
+
+def subsample_consts(consts, args):    
+    # Match constructs
+
+    out = ''
+    data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
+    n_split = 0
+    
+    while len(consts) > 0:
+        n_split += 1
+        if n_split > args.max_n_file:
+            break
+
+        # Sample a xz file
+        sampled_path = random.sample(data_paths, 1)[0]
+        data_paths.pop(data_paths.index(sampled_path))
+        
+        text = ''
+        with lzma.open(sampled_path, 'r') as f:
+            for line in f:
+                line_text = line.decode('UTF-8').strip()
+                if line_text != '\n':
+                    text += f'{line_text} '
+        
+        if args.debug:
+            text = text[:1000]
+
+        doc = parser(text)
+        for sent in doc.sentences:
+            const = sent.constituency
+            const = str(utils.data_utils.tree_to_zss(const))
+            if const in consts:
+                out += ' '.join(sent) + '\n'
+                consts.pop(consts.index(const))
+        # TODO: soft matching with zss tree edit distance
+    return out
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -194,6 +230,9 @@ if __name__ == '__main__':
     # Data
     parser.add_argument('--load_babylm_config', default='', type=str) # The babylm dataset to match
     parser.add_argument('--match_type', default='vocab', type=str) # vocab, sent_len, construct
+
+    # Subsampling
+    parser.add_argument('--max_n_file', default='3000', type=int) # number of subsets of openwebtext to consider
 
     args = parser.parse_args()
 
