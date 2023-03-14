@@ -2,6 +2,7 @@ import pickle
 import os
 
 import pandas as pd
+import zss
 
 import utils.globals as globals
 
@@ -70,6 +71,15 @@ def get_vocab(sent):
             cur_word = ''
     return vocab
 
+def tree_to_zss(tree):
+    # Exclude leaf nodes (words)
+    if len(tree.children[0].children) == 0:
+        return zss.Node(tree.label)
+
+    out = zss.Node(tree.label)
+    for child in tree.children:
+        out.addkid(tree_to_zss(child))
+    return out
 
 if __name__ == '__main__':
     pass
