@@ -42,5 +42,34 @@ def flatten_pairs(pairs):
         out += [pair[0], pair[1]]
     return out
 
+def split_sents(text):
+    sents = text.replace('\n', '').split('. ')
+    sents = [sent.strip() + '.' for sent in sents[:-1]] + [sents[-1]]
+    sents1, out = [], []
+
+    for sent in sents:
+        new = sent.split('! ')
+        new = [n.strip() + '!' for n in new[:-1]] + [new[-1]]
+        sents1 += new
+
+
+    for sent in sents1:
+        new = sent.split('? ')
+        new = [n.strip() + '?' for n in new[:-1]] + [new[-1]]
+        out += new
+    return out
+
+def get_vocab(sent):
+    vocab = []
+    cur_word = ''
+    for char in sent:
+        if char.isalnum():
+            cur_word += char
+        elif cur_word != '':
+            vocab.append(cur_word.lower())
+            cur_word = ''
+    return vocab
+
+
 if __name__ == '__main__':
     pass
