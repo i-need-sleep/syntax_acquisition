@@ -19,6 +19,9 @@ def subsample(args):
     if args.match_type == 'vocab':
         vocab, n_char = get_vocab_from_config(args.load_babylm_config, args)
         subsample = subsample_vocab(vocab, n_char, args) # one long string
+    elif args.match_type == 'sent_len':
+        lens = get_sent_len_from_config(args.load_babylm_config, args)
+        subsample = subsample_sent_len(lens, args)
     else:
         raise NotImplementedError
     
@@ -92,6 +95,68 @@ def subsample_vocab(vocab, tar_n_char, args):
                 continue
         
             out += sent + '\n'
+    return out
+
+def get_sent_len_from_config(config, args):
+    # Fetch a list of lengths
+    out = []
+    
+    config_path = f'{globals.CONFIG_DIR}/{config}.json'
+    with open(config_path, 'r', encoding="utf-8") as f:
+        config_data = json.load(f)
+
+    paths = config_data['train_data_paths'] + config_data['dev_data_paths']
+    texts = []
+
+    if args.debug:
+        paths = paths[:2]
+
+    for path in paths:
+        with open(path, 'r', encoding="utf-8") as f:
+            text = f.read()
+            texts.append(text)
+
+    for text in tqdm.tqdm(texts):
+        sents = utils.data_utils.split_sents(text)
+
+        if args.debug:
+            sents = sents[:10]
+
+        # Sentence length as # spaces
+        for sent in sents:
+            out.append(sent.count(' '))
+    return out
+
+def subsample_sent_len(lens, args):
+    # Match sentence length
+
+    out = ''
+    data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
+    
+    while len(lens) > 0:
+        # Sample a xz file
+        sampled_path = random.sample(data_paths, 1)[0]
+        data_paths.pop(data_paths.index(sampled_path))
+        
+        data_str = ''
+        with lzma.open(sampled_path, 'r') as f:
+            for line in f:
+                line_text = line.decode('UTF-8').strip()
+                if line_text != '\n':
+                    data_str += f'{line_text} '
+        
+        sents = utils.data_utils.split_sents(data_str)
+        
+        if args.debug:
+            sents = sents[:10]
+        
+        # Filter out OOV sents
+        for sent in sents: 
+            sent_len = sent.count(' ')
+            
+            if sent_len in lens:
+                out += sent + '\n'
+                lens.pop(lens.index(sent_len))
     return out
 
 if __name__ == '__main__':

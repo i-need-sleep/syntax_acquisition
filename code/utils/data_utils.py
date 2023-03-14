@@ -43,18 +43,18 @@ def flatten_pairs(pairs):
     return out
 
 def split_sents(text):
-    sents = text.replace('\n', '').split('. ')
+    sents = text.replace('\n', ' ').split('.')
     sents = [sent.strip() + '.' for sent in sents[:-1]] + [sents[-1]]
     sents1, out = [], []
 
     for sent in sents:
-        new = sent.split('! ')
+        new = sent.split('!')
         new = [n.strip() + '!' for n in new[:-1]] + [new[-1]]
         sents1 += new
 
 
     for sent in sents1:
-        new = sent.split('? ')
+        new = sent.split('?')
         new = [n.strip() + '?' for n in new[:-1]] + [new[-1]]
         out += new
     return out
