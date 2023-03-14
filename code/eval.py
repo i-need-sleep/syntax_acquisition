@@ -21,6 +21,8 @@ def eval(args):
     accss = {}
 
     for dir in dirs:
+        if dir == 'runs':
+            continue
         d = f'{parent_dir}/{dir}'
         accs = eval_one(d, args.load_dir, dir, args)
         accss[d] = accs
