@@ -177,11 +177,11 @@ def get_consts_from_config(config, args):
         if args.debug:
             text = text[:1000]
 
-            doc = parser(text)
-            for sent in doc.sentences:
-                const = sent.constituency
-                const = utils.data_utils.tree_to_zss(const)
-                consts.append(str(const))
+        doc = parser(text)
+        for sent in doc.sentences:
+            const = sent.constituency
+            const = utils.data_utils.tree_to_zss(const)
+            consts.append(str(const))
     return consts
 
 def subsample_consts(consts, args):    
