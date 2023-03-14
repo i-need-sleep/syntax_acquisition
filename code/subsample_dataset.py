@@ -240,7 +240,7 @@ if __name__ == '__main__':
     parser.add_argument('--match_type', default='vocab', type=str) # vocab, sent_len, construct
 
     # Subsampling
-    parser.add_argument('--max_n_file', default='3000', type=int) # number of subsets of openwebtext to consider
+    parser.add_argument('--max_n_file', default='5000', type=int) # number of subsets of openwebtext to consider
 
     args = parser.parse_args()
 
