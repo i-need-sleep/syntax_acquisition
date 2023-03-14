@@ -71,7 +71,11 @@ def subsample_vocab(vocab, tar_n_char, args):
     out = ''
     data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
     
+    n_split = 0
     while len(out) < tar_n_char:
+        n_split += 1
+        if n_split > args.max_n_file:
+            break
         # Sample a xz file
         sampled_path = random.sample(data_paths, 1)[0]
         data_paths.pop(data_paths.index(sampled_path))
@@ -130,7 +134,11 @@ def subsample_sent_len(lens, args):
     out = ''
     data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
     
+    n_split = 0
     while len(lens) > 0:
+        n_split += 1
+        if n_split > args.max_n_file:
+            break
         # Sample a xz file
         sampled_path = random.sample(data_paths, 1)[0]
         data_paths.pop(data_paths.index(sampled_path))
