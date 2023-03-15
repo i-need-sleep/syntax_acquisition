@@ -33,6 +33,7 @@ def subsample(args):
         subsample = subsample_vocab(tokenizer, n_char, args) # one long string
     elif args.match_type == 'sent_len':
         tokenizer, lens = get_sent_len_from_config(args.load_babylm_config, args)
+        print(lens)
         subsample = subsample_sent_len(tokenizer, lens, args)
     elif args.match_type == 'construct':
         consts = get_consts_from_config(args.load_babylm_config, args)
