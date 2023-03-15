@@ -79,15 +79,17 @@ def get_vocab_from_config(config, args):
 
     return tokenizer, n_token
 
-def subsample_vocab(tokenizer, tar_n_char, args):
+def subsample_vocab(tokenizer, tar_n_token, args):
     # Subsample openwebtext until target # char is reached
 
     out = ''
     data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
     
     n_split = 0
-    while len(out) < tar_n_char:
+    n_token = 0
+    while n_token < tar_n_token:
         n_split += 1
+        print(n_split)
         if n_split > args.max_n_file:
             break
         # Sample a xz file
@@ -108,6 +110,7 @@ def subsample_vocab(tokenizer, tar_n_char, args):
         for sent in sents:
             if not '[UNK]' in sent.tokens:
                 out += tokenizer.decode(sent.ids) + '\n'
+                n_token += len(sent.tokens)
     return out
 
 def get_sent_len_from_config(config, args):
@@ -149,8 +152,12 @@ def subsample_sent_len(tokenizer, lens, args):
     data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
     
     n_split = 0
-    while len(lens) > 0:
+    ctr = 0
+    for val in lens.values():
+        ctr += val
+    while ctr > 0:
         n_split += 1
+        print(n_split)
         if n_split > args.max_n_file:
             break
         # Sample a xz file
@@ -172,7 +179,8 @@ def subsample_sent_len(tokenizer, lens, args):
             sent_len = len(sent.tokens)
             if sent_len in lens.keys() and lens[sent_len] > 0:
                 out += tokenizer.decode(sent.ids) + '\n'
-                lens[sent_len] -= 0
+                lens[sent_len] -= 1
+                ctr -= 1
     return out
 
 def get_consts_from_config(config, args):
@@ -220,8 +228,14 @@ def subsample_consts(consts, args):
     # TODO: try the BERT-based parser
     parser = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency')
     
-    while len(consts) > 0:
+    
+    ctr = 0
+    for val in consts.values():
+        ctr += val
+
+    while ctr > 0:
         n_split += 1
+        print(n_split)
         if n_split > args.max_n_file:
             break
 
@@ -247,6 +261,7 @@ def subsample_consts(consts, args):
                 if const in consts.keys() and consts[const] > 0:
                     out += ' '.join(sent) + '\n'
                     consts[const] -= 1
+                    ctr -= 1
             except:
                 pass
         # TODO: soft matching with zss tree edit distance
