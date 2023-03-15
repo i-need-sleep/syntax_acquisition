@@ -166,10 +166,10 @@ def subsample_sent_len(lens, args):
 
 def get_consts_from_config(config, args):
     # Fetch a list of uncased words
-    consts = []
+    consts = {}
 
     # Parser
-    parser = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency', package={'constituency': 'wsj_bert'})
+    parser = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency')
     
     config_path = f'{globals.CONFIG_DIR}/{config}.json'
     with open(config_path, 'r', encoding="utf-8") as f:
@@ -190,8 +190,10 @@ def get_consts_from_config(config, args):
         for sent in doc.sentences:
             try:
                 const = sent.constituency
-                const = utils.data_utils.tree_to_zss(const)
-                consts.append(str(const))
+                const = str(utils.data_utils.tree_to_zss(const))
+                if const not in consts.keys():
+                    consts[const] = 0
+                consts[const] += 1
             except:
                 pass
     return consts
@@ -202,6 +204,10 @@ def subsample_consts(consts, args):
     out = ''
     data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
     n_split = 0
+
+    # Parser
+    # TODO: try the BERT-based parser
+    parser = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency')
     
     while len(consts) > 0:
         n_split += 1
@@ -227,9 +233,9 @@ def subsample_consts(consts, args):
             try:
                 const = sent.constituency
                 const = str(utils.data_utils.tree_to_zss(const))
-                if const in consts:
+                if const in consts.keys() and consts[const] > 0:
                     out += ' '.join(sent) + '\n'
-                    consts.pop(consts.index(const))
+                    consts[const] -= 1
             except:
                 pass
         # TODO: soft matching with zss tree edit distance
