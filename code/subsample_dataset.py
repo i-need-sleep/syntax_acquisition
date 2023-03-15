@@ -64,7 +64,7 @@ def get_vocab_from_config(config, args):
             yield t
     
     # Define a word-level tokenizer
-    tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
+    tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
     tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
     tokenizer.pre_tokenizer = pre_tokenizers.Sequence([pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()])
     special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
@@ -126,7 +126,7 @@ def get_sent_len_from_config(config, args):
             yield t
     
     # Define a word-level tokenizer
-    tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
+    tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
     tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
     tokenizer.pre_tokenizer = pre_tokenizers.Sequence([pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()])
     special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
