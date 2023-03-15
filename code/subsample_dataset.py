@@ -125,7 +125,8 @@ def get_sent_len_from_config(config, args):
             text = text[:1000]
         sents = nltk.sent_tokenize(text)
         sents = [nltk.word_tokenize(sent) for sent in sents]
-        out.append(len(sents))
+        for sent in sents:
+            out.append(len(sent))
     return out
 
 def subsample_sent_len(lens, args):
