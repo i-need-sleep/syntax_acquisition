@@ -32,7 +32,7 @@ def subsample(args):
         raise NotImplementedError
     
     save_path = f'{globals.DATA_DIR}/subsampled/{args.match_type}.txt'
-    print(f'Saving at {save_path}')
+    print(f'Saving at {save_path}, len {len(subsample)}')
     with open(save_path, 'w') as f:
         f.write(subsample)
 
@@ -187,9 +187,12 @@ def get_consts_from_config(config, args):
 
         doc = parser(text)
         for sent in doc.sentences:
-            const = sent.constituency
-            const = utils.data_utils.tree_to_zss(const)
-            consts.append(str(const))
+            try:
+                const = sent.constituency
+                const = utils.data_utils.tree_to_zss(const)
+                consts.append(str(const))
+            except:
+                pass
     return consts
 
 def subsample_consts(consts, args):    
@@ -220,11 +223,14 @@ def subsample_consts(consts, args):
 
         doc = parser(text)
         for sent in doc.sentences:
-            const = sent.constituency
-            const = str(utils.data_utils.tree_to_zss(const))
-            if const in consts:
-                out += ' '.join(sent) + '\n'
-                consts.pop(consts.index(const))
+            try:
+                const = sent.constituency
+                const = str(utils.data_utils.tree_to_zss(const))
+                if const in consts:
+                    out += ' '.join(sent) + '\n'
+                    consts.pop(consts.index(const))
+            except:
+                pass
         # TODO: soft matching with zss tree edit distance
     return out
 
