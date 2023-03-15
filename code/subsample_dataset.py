@@ -7,6 +7,15 @@ import lzma
 import tqdm
 import nltk
 import stanza
+from tokenizers import (
+    decoders,
+    models,
+    normalizers,
+    pre_tokenizers,
+    processors,
+    trainers,
+    Tokenizer,
+)
 
 import utils.dataset
 import utils.data_utils
@@ -20,11 +29,11 @@ def subsample(args):
     print(args)
 
     if args.match_type == 'vocab':
-        vocab, n_char = get_vocab_from_config(args.load_babylm_config, args)
-        subsample = subsample_vocab(vocab, n_char, args) # one long string
+        tokenizer, n_char = get_vocab_from_config(args.load_babylm_config, args)
+        subsample = subsample_vocab(tokenizer, n_char, args) # one long string
     elif args.match_type == 'sent_len':
-        lens = get_sent_len_from_config(args.load_babylm_config, args)
-        subsample = subsample_sent_len(lens, args)
+        tokenizer, lens = get_sent_len_from_config(args.load_babylm_config, args)
+        subsample = subsample_sent_len(tokenizer, lens, args)
     elif args.match_type == 'construct':
         consts = get_consts_from_config(args.load_babylm_config, args)
         subsample = subsample_consts(consts, args)
@@ -38,7 +47,6 @@ def subsample(args):
 
 def get_vocab_from_config(config, args):
     # Fetch a list of uncased words
-    out = []
     
     config_path = f'{globals.CONFIG_DIR}/{config}.json'
     with open(config_path, 'r', encoding="utf-8") as f:
@@ -51,21 +59,27 @@ def get_vocab_from_config(config, args):
             text = f.read()
             texts.append(text)
 
-    n_char = 0
-    for text in tqdm.tqdm(texts):
-        if args.debug:
-            text = text[:1000]
-        n_char += len(text)
-        sents = nltk.sent_tokenize(text)
-        sents = [nltk.word_tokenize(sent) for sent in sents]
+    def get_corpus():
+        for t in texts:
+            yield t
+    
+    # Define a word-level tokenizer
+    tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
+    tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
+    tokenizer.pre_tokenizer = pre_tokenizers.Sequence([pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()])
+    special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
+    trainer = trainers.WordLevelTrainer(vocab_size=50000, special_tokens=special_tokens)
+    tokenizer.train_from_iterator(get_corpus(), trainer=trainer)
+    
+    n_token = 0
+    for text in texts:
+        sents = tokenizer.encode_batch(sents)
         for sent in sents:
-            for v in sent:
-                if v not in out:
-                    out.append(v)
+            n_token += len(sent.tokens)
 
-    return out, n_char
+    return tokenizer, n_token
 
-def subsample_vocab(vocab, tar_n_char, args):
+def subsample_vocab(tokenizer, tar_n_char, args):
     # Subsample openwebtext until target # char is reached
 
     out = ''
@@ -89,21 +103,16 @@ def subsample_vocab(vocab, tar_n_char, args):
         
         if args.debug:
             text = text[:1000]
-        sents = nltk.sent_tokenize(text)
-        sents = [nltk.word_tokenize(sent) for sent in sents]
-        for idx, sent in enumerate(sents):
-            skip = False
-            for v in sent:
-                if v not in vocab:
-                    skip = True
-            if skip:
-                continue
-            out += ' '.join(sent) + '\n'
+
+        sents = tokenizer.encode_batch(text)
+        for sent in sents:
+            if not '[UNK]' in sent.tokens:
+                out += tokenizer.decode(sent.ids) + '\n'
     return out
 
 def get_sent_len_from_config(config, args):
     # Fetch a list of lengths
-    out = []
+    out = {}
     
     config_path = f'{globals.CONFIG_DIR}/{config}.json'
     with open(config_path, 'r', encoding="utf-8") as f:
@@ -112,24 +121,28 @@ def get_sent_len_from_config(config, args):
     paths = config_data['train_data_paths'] + config_data['dev_data_paths']
     texts = []
 
-    if args.debug:
-        paths = paths[:2]
-
-    for path in paths:
-        with open(path, 'r', encoding="utf-8") as f:
-            text = f.read()
-            texts.append(text)
-
-    for text in tqdm.tqdm(texts):
-        if args.debug:
-            text = text[:1000]
-        sents = nltk.sent_tokenize(text)
-        sents = [nltk.word_tokenize(sent) for sent in sents]
+    def get_corpus():
+        for t in texts:
+            yield t
+    
+    # Define a word-level tokenizer
+    tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
+    tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
+    tokenizer.pre_tokenizer = pre_tokenizers.Sequence([pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()])
+    special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
+    trainer = trainers.WordLevelTrainer(vocab_size=50000, special_tokens=special_tokens)
+    tokenizer.train_from_iterator(get_corpus(), trainer=trainer)
+    
+    for text in texts:
+        sents = tokenizer.encode_batch(sents)
         for sent in sents:
-            out.append(len(sent))
-    return out
+            sent_len = len(sent.tokens)
+            if sent_len not in out.keys():
+                out[sent_len] = 0
+            out[sent_len] += 1
+    return tokenizer, out
 
-def subsample_sent_len(lens, args):
+def subsample_sent_len(tokenizer, lens, args):
     # Match sentence length
 
     out = ''
@@ -153,15 +166,13 @@ def subsample_sent_len(lens, args):
         
         if args.debug:
             text = text[:1000]
-        sents = nltk.sent_tokenize(text)
-        sents = [nltk.word_tokenize(sent) for sent in sents]
-
-        for sent in sents: 
-            sent_len = len(sent)
-            
-            if sent_len in lens:
-                out += ' '.join(sent) + '\n'
-                lens.pop(lens.index(sent_len))
+        
+        sents = tokenizer.encode_batch(text)
+        for sent in sents:
+            sent_len = len(sent.tokens)
+            if sent_len in lens.keys() and lens[sent_len] > 0:
+                out += tokenizer.decode(sent.ids) + '\n'
+                lens[sent_len] -= 0
     return out
 
 def get_consts_from_config(config, args):
