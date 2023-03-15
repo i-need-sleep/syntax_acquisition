@@ -74,7 +74,7 @@ def get_vocab_from_config(config, args):
     
     n_token = 0
     for text in texts:
-        sents = tokenizer.encode_batch(sents)
+        sents = tokenizer.encode_batch(text)
         for sent in sents:
             n_token += len(sent.tokens)
 
@@ -124,6 +124,10 @@ def get_sent_len_from_config(config, args):
 
     paths = config_data['train_data_paths'] + config_data['dev_data_paths']
     texts = []
+    for path in paths:
+        with open(path, 'r', encoding="utf-8") as f:
+            text = f.read()
+            texts.append(text)
 
     def get_corpus():
         for t in texts:
@@ -138,7 +142,7 @@ def get_sent_len_from_config(config, args):
     tokenizer.train_from_iterator(get_corpus(), trainer=trainer)
     
     for text in texts:
-        sents = tokenizer.encode_batch(sents)
+        sents = tokenizer.encode_batch(text)
         for sent in sents:
             sent_len = len(sent.tokens)
             if sent_len not in out.keys():
