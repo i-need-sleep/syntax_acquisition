@@ -33,6 +33,18 @@ def train(args):
             data_paths = [str(x) for x in pathlib.Path(f'{utils.globals.DATA_DIR}/openwebtext').glob(f'*.xz')]
             data_paths = random.sample(data_paths, 320)
             train_data_paths, dev_data_paths = data_paths[: len(data_paths)//10*9], data_paths[len(data_paths)//10*9:]
+        elif args.dataset == 'subsample_vocab':
+            data_path = f'{utils.globals.DATA_DIR}/subsampled/vocab.txt'
+            with open(data_path, 'r') as f:
+                text = f.read()
+            text_train, text_dev = text[: 6000000], text[6000000: 6600000]
+            train_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_train.txt'
+            dev_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_dev.txt'
+            with open(train_path, 'w') as f:
+                f.write(text_train)
+            with open(dev_path, 'w') as f:
+                f.write(text_dev)
+            train_data_paths, dev_data_paths = [train_path], [dev_path]
         else:
             raise NotImplementedError
         
