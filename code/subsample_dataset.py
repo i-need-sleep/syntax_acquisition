@@ -41,7 +41,7 @@ def subsample(args):
     else:
         raise NotImplementedError
     
-    save_path = f'{globals.DATA_DIR}/subsampled/{args.match_type}.txt'
+    save_path = f'{globals.DATA_DIR}/subsampled/{args.match_type}_debug.txt'
     print(f'Saving at {save_path}, len {len(subsample)}')
     with open(save_path, 'w') as f:
         f.write(subsample)
@@ -69,14 +69,14 @@ def get_vocab_from_config(config, args):
     tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
     tokenizer.pre_tokenizer = pre_tokenizers.Sequence([pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()])
     special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
-    trainer = trainers.WordLevelTrainer(vocab_size=50000, special_tokens=special_tokens)
+    trainer = trainers.WordLevelTrainer(vocab_size=20000, special_tokens=special_tokens)
     tokenizer.train_from_iterator(get_corpus(), trainer=trainer)
     
     n_token = 0
-    for text in texts:
-        sents = tokenizer.encode_batch(text)
-        for sent in sents:
-            n_token += len(sent.tokens)
+    # for text in texts:
+    #     sents = tokenizer.encode_batch(text)
+    #     for sent in sents:
+    #         n_token += len(sent.tokens)
 
     return tokenizer, n_token
 
@@ -88,10 +88,10 @@ def subsample_vocab(tokenizer, tar_n_token, args):
     
     n_split = 0
     n_token = 0
-    while n_token < tar_n_token:
+    while True: # n_token < tar_n_token:
         n_split += 1
         print(n_split)
-        if n_split > args.max_n_file:
+        if n_split > 10: #args.max_n_file:
             break
         # Sample a xz file
         sampled_path = random.sample(data_paths, 1)[0]
