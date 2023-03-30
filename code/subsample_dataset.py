@@ -203,12 +203,14 @@ def get_consts_from_config(config, args):
             text = f.read()
             texts.append(text)
 
-    for text in tqdm.tqdm(texts):
+    for text_idx, text in tqdm.tqdm(enumerate(texts)):
+        print(f'Text: {text_idx}')
         if args.debug:
             text = text[:1000]
 
         doc = parser(text)
-        for sent in doc.sentences:
+        for sent_idx, sent in enumerate(doc.sentences):
+            print(f'Sent: {sent_idx}')
             try:
                 const = sent.constituency
                 const = str(utils.data_utils.tree_to_zss(const))
@@ -217,6 +219,12 @@ def get_consts_from_config(config, args):
                 consts[const] += 1
             except:
                 pass
+    
+        save_path = f'{globals.DATA_DIR}/subsampled/consts_counts.json'
+        print(f'Saving at {save_path}')
+        with open(save_path, 'w') as f:
+            json.dump(consts, f)
+            
     return consts
 
 def subsample_consts(consts, args):    
@@ -278,7 +286,7 @@ if __name__ == '__main__':
 
     # Data
     parser.add_argument('--load_babylm_config', default='babylm_100M-poc', type=str) # The babylm dataset to match
-    parser.add_argument('--match_type', default='sent_len', type=str) # vocab, sent_len, construct
+    parser.add_argument('--match_type', default='construct', type=str) # vocab, sent_len, construct
 
     # Subsampling
     parser.add_argument('--max_n_file', default='2500', type=int) # number of subsets of openwebtext to consider
