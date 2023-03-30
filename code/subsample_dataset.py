@@ -132,7 +132,7 @@ def get_sent_len_from_config(config, args):
     def get_corpus():
         for t in texts:
             yield t
-    print(321312)
+            
     # Define a word-level tokenizer
     tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
     tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
@@ -140,7 +140,12 @@ def get_sent_len_from_config(config, args):
     special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
     trainer = trainers.WordLevelTrainer(vocab_size=50000, special_tokens=special_tokens)
     tokenizer.train_from_iterator(get_corpus(), trainer=trainer)
-    print(123123)
+
+    # Save the tokenizer
+    save_dir = f'{utils.globals.TOKENIZER_CHECKPOINT_DIR}/word_level'
+    tokenizer.save_pretrained(save_dir)
+    print(f'Tokenizer saved: {save_dir}')
+    exit()
     
     for text in texts:
         sents = tokenizer.encode_batch(text)
