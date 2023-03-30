@@ -4,6 +4,7 @@ import pathlib
 import random
 import lzma
 
+import transformers
 import tqdm
 import nltk
 import stanza
@@ -128,33 +129,22 @@ def get_sent_len_from_config(config, args):
         with open(path, 'r', encoding="utf-8") as f:
             text = f.read()
             texts.append(text)
-
-    def get_corpus():
-        for t in texts:
-            yield t
             
-    # Define a word-level tokenizer
-    tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
-    tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
-    tokenizer.pre_tokenizer = pre_tokenizers.Sequence([pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()])
-    special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
-    trainer = trainers.WordLevelTrainer(vocab_size=50000, special_tokens=special_tokens)
-    tokenizer.train_from_iterator(get_corpus(), trainer=trainer)
-
-    # Save the tokenizer
-    save_dir = f'{utils.globals.TOKENIZER_CHECKPOINT_DIR}/word_level'
-    tokenizer.save(save_dir)
-    print(f'Tokenizer saved: {save_dir}')
-    exit()
+    tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
     
     for text in texts:
-        sents = tokenizer.encode_batch(text)
-        for sent in sents:
-            sent_len = len(sent.tokens)
+        doc = tokenizer(text)
+        for sent in doc.sentences:
+            sent_len = len(sent.words)
             if sent_len not in out.keys():
                 out[sent_len] = 0
             out[sent_len] += 1
-            print(out)
+    
+    save_path = f'{globals.DATA_DIR}/subsampled/sent_len_counts.json'
+    print(f'Saving at {save_path}')
+    with open(save_path, 'w') as f:
+        json.dump(out, f)
+        
     return tokenizer, out
 
 def subsample_sent_len(tokenizer, lens, args):
@@ -185,10 +175,10 @@ def subsample_sent_len(tokenizer, lens, args):
         
         if args.debug:
             text = text[:1000]
-        
-        sents = tokenizer.encode_batch(text)
-        for sent in sents:
-            sent_len = len(sent.tokens)
+            
+        doc = tokenizer(text)
+        for sent in doc.sentences:
+            sent_len = len(sent.words)
             if sent_len in lens.keys() and lens[sent_len] > 0:
                 out += tokenizer.decode(sent.ids) + '\n'
                 lens[sent_len] -= 1
@@ -291,7 +281,7 @@ if __name__ == '__main__':
     parser.add_argument('--match_type', default='sent_len', type=str) # vocab, sent_len, construct
 
     # Subsampling
-    parser.add_argument('--max_n_file', default='5000', type=int) # number of subsets of openwebtext to consider
+    parser.add_argument('--max_n_file', default='2500', type=int) # number of subsets of openwebtext to consider
 
     args = parser.parse_args()
 
