@@ -41,7 +41,7 @@ def subsample(args):
     else:
         raise NotImplementedError
     
-    save_path = f'{globals.DATA_DIR}/subsampled/{args.match_type}_debug.txt'
+    save_path = f'{globals.DATA_DIR}/subsampled/{args.match_type}_{args.name}.txt'
     print(f'Saving at {save_path}, len {len(subsample)}')
     with open(save_path, 'w') as f:
         f.write(subsample)

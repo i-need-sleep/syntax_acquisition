@@ -22,15 +22,5 @@ source /apps/local/anaconda3/bin/activate adv          # 调用 virtual env
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 export HF_HOME=/l/users/yichen.huang/misc/cache
 python -u eval.py \
-    --load_dir babylm_100M-poc
-python -u eval.py \
-    --load_dir babylm_100M-poc1
-python -u eval.py \
-    --load_dir babylm_100M-poc2
-python -u eval.py \
-    --load_dir openwebtext-poc
-python -u eval.py \
-    --load_dir openwebtext-poc1
-python -u eval.py \
-    --load_dir openwebtext-poc2
+    --load_dir subsample_vocab-poc2
 echo "FINISH"                       # 输出起始信息

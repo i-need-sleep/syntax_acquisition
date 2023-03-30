@@ -37,7 +37,8 @@ def train(args):
             data_path = f'{utils.globals.DATA_DIR}/subsampled/vocab.txt'
             with open(data_path, 'r') as f:
                 text = f.read()
-            text_train, text_dev = text[: 320000000], text[320000000: 320000000 * 1.1]
+            cutoff = 350000000
+            text_train, text_dev = text[: cutoff], text[cutoff: int(cutoff * 1.1)]
             train_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_train.txt'
             dev_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_dev.txt'
             with open(train_path, 'w') as f:

@@ -20,5 +20,9 @@ source /apps/local/anaconda3/bin/activate tim          # 调用 virtual env
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 export HF_HOME=/l/users/yichen.huang/misc/cache
 python -u subsample_dataset.py \
-    --load_babylm_config babylm_100M-poc
+    --load_babylm_config babylm_100M-poc \
+    --name 0
+python -u subsample_dataset.py \
+    --load_babylm_config babylm_100M-poc \
+    --name 1
 echo "FINISH"                       # 输出起始信息

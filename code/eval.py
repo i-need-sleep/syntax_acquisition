@@ -21,11 +21,14 @@ def eval(args):
     accss = {}
 
     for dir in dirs:
-        if dir == 'runs':
-            continue
-        d = f'{parent_dir}/{dir}'
-        accs = eval_one(d, args.load_dir, dir, args)
-        accss[d] = accs
+        try:
+            if dir == 'runs':
+                continue
+            d = f'{parent_dir}/{dir}'
+            accs = eval_one(d, args.load_dir, dir, args)
+            accss[d] = accs
+        except:
+            pass
     
     syneval_out_path = f'{globals.OUT_DIR}/{args.load_dir}_syneval.json'
     print(f'Saving syneval acc at {syneval_out_path}')
