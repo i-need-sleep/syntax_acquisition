@@ -132,7 +132,7 @@ def get_sent_len_from_config(config, args):
     def get_corpus():
         for t in texts:
             yield t
-    
+    print(321312)
     # Define a word-level tokenizer
     tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
     tokenizer.normalizer = normalizers.BertNormalizer(lowercase=True)
@@ -140,6 +140,7 @@ def get_sent_len_from_config(config, args):
     special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
     trainer = trainers.WordLevelTrainer(vocab_size=50000, special_tokens=special_tokens)
     tokenizer.train_from_iterator(get_corpus(), trainer=trainer)
+    print(123123)
     
     for text in texts:
         sents = tokenizer.encode_batch(text)
@@ -148,6 +149,7 @@ def get_sent_len_from_config(config, args):
             if sent_len not in out.keys():
                 out[sent_len] = 0
             out[sent_len] += 1
+            print(out)
     return tokenizer, out
 
 def subsample_sent_len(tokenizer, lens, args):
@@ -280,8 +282,8 @@ if __name__ == '__main__':
     parser.add_argument('--name', default='unnamed')
 
     # Data
-    parser.add_argument('--load_babylm_config', default='', type=str) # The babylm dataset to match
-    parser.add_argument('--match_type', default='vocab', type=str) # vocab, sent_len, construct
+    parser.add_argument('--load_babylm_config', default='babylm_100M-poc', type=str) # The babylm dataset to match
+    parser.add_argument('--match_type', default='sent_len', type=str) # vocab, sent_len, construct
 
     # Subsampling
     parser.add_argument('--max_n_file', default='5000', type=int) # number of subsets of openwebtext to consider
