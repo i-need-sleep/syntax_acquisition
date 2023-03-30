@@ -143,7 +143,7 @@ def get_sent_len_from_config(config, args):
 
     # Save the tokenizer
     save_dir = f'{utils.globals.TOKENIZER_CHECKPOINT_DIR}/word_level'
-    tokenizer.save_pretrained(save_dir)
+    tokenizer.save(save_dir)
     print(f'Tokenizer saved: {save_dir}')
     exit()
     
