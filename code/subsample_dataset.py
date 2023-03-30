@@ -91,7 +91,7 @@ def subsample_vocab(tokenizer, tar_n_token, args):
     while True: # n_token < tar_n_token:
         n_split += 1
         print(n_split)
-        if n_split > 10: #args.max_n_file:
+        if n_split > 1000: #args.max_n_file:
             break
         # Sample a xz file
         sampled_path = random.sample(data_paths, 1)[0]
