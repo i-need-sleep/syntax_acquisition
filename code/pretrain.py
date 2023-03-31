@@ -34,13 +34,20 @@ def train(args):
             data_paths = random.sample(data_paths, 320)
             train_data_paths, dev_data_paths = data_paths[: len(data_paths)//10*9], data_paths[len(data_paths)//10*9:]
         elif args.dataset == 'subsample_vocab':
-            data_path = f'{utils.globals.DATA_DIR}/subsampled/vocab.txt'
+            if '0' in args.name:
+                run_idx = '_0'
+            elif '1' in args.name:
+                run_idx = '_1'
+            else:
+                run_idx = ''
+            print(f'run_idx: {run_idx}')
+            data_path = f'{utils.globals.DATA_DIR}/subsampled/vocab{run_idx}.txt'
             with open(data_path, 'r') as f:
                 text = f.read()
             cutoff = 350000000
             text_train, text_dev = text[: cutoff], text[cutoff: int(cutoff * 1.1)]
-            train_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_train.txt'
-            dev_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_dev.txt'
+            train_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_train{run_idx}.txt'
+            dev_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_dev{run_idx}.txt'
             with open(train_path, 'w') as f:
                 f.write(text_train)
             with open(dev_path, 'w') as f:
