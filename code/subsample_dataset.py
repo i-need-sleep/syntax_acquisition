@@ -191,6 +191,11 @@ def subsample_sent_len(tokenizer, lens, args):
                 out += sent.text + '\n'
                 lens[sent_len] -= 1
                 ctr -= 1
+
+        save_path = f'{globals.DATA_DIR}/subsampled/{args.match_type}_{args.name}.txt'
+        print(f'Saving at {save_path}, len {len(out)}')
+        with open(save_path, 'w') as f:
+            f.write(out)
     return out
 
 def get_consts_from_config(config, args):
