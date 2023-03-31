@@ -123,28 +123,33 @@ def get_sent_len_from_config(config, args):
     with open(config_path, 'r', encoding="utf-8") as f:
         config_data = json.load(f)
 
-    paths = config_data['train_data_paths'] + config_data['dev_data_paths']
-    texts = []
-    for path in paths:
-        with open(path, 'r', encoding="utf-8") as f:
-            text = f.read()
-            texts.append(text)
-            
-    tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
-    
-    for text in texts:
-        doc = tokenizer(text)
-        for sent in doc.sentences:
-            sent_len = len(sent.words)
-            if sent_len not in out.keys():
-                out[sent_len] = 0
-            out[sent_len] += 1
-    
     save_path = f'{globals.DATA_DIR}/subsampled/sent_len_counts.json'
-    print(f'Saving at {save_path}')
-    with open(save_path, 'w') as f:
-        json.dump(out, f)
-        
+    tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
+
+    try:
+        with open(save_path, 'r') as f:
+            out = json.load(f)
+        print(f'Loaded from {save_path}')
+    except:
+        paths = config_data['train_data_paths'] + config_data['dev_data_paths']
+        texts = []
+        for path in paths:
+            with open(path, 'r', encoding="utf-8") as f:
+                text = f.read()
+                texts.append(text)
+            
+            for text in texts:
+                doc = tokenizer(text)
+                for sent in doc.sentences:
+                    sent_len = len(sent.words)
+                    if sent_len not in out.keys():
+                        out[sent_len] = 0
+                    out[sent_len] += 1
+            
+                print(f'Saving at {save_path}')
+                with open(save_path, 'w') as f:
+                    json.dump(out, f)
+            
     return tokenizer, out
 
 def subsample_sent_len(tokenizer, lens, args):
@@ -155,8 +160,11 @@ def subsample_sent_len(tokenizer, lens, args):
     
     n_split = 0
     ctr = 0
-    for val in lens.values():
-        ctr += val
+
+    for key, val in lens.items():
+        if int(key) > 1:
+            ctr += val
+
     while ctr > 0:
         n_split += 1
         print(n_split)
@@ -168,19 +176,19 @@ def subsample_sent_len(tokenizer, lens, args):
         
         text = ''
         with lzma.open(sampled_path, 'r') as f:
-            for line in f:
+            for idx, line in enumerate(f):
                 line_text = line.decode('UTF-8').strip()
                 if line_text != '\n':
                     text += f'{line_text} '
-        
+
         if args.debug:
-            text = text[:1000]
+            text = text[:2000]
             
         doc = tokenizer(text)
         for sent in doc.sentences:
-            sent_len = len(sent.words)
+            sent_len = str(len(sent.words))
             if sent_len in lens.keys() and lens[sent_len] > 0:
-                out += tokenizer.decode(sent.ids) + '\n'
+                out += sent.text + '\n'
                 lens[sent_len] -= 1
                 ctr -= 1
     return out
