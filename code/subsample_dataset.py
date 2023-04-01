@@ -134,9 +134,20 @@ def get_sent_len_from_config(config, args):
         paths = config_data['train_data_paths'] + config_data['dev_data_paths']
         texts = []
         for path in paths:
-            with open(path, 'r', encoding="utf-8") as f:
-                text = f.read()
-                texts.append(text)
+            if not 'openwebtext' in config:
+                with open(path, 'r', encoding="utf-8") as f:
+                    text = f.read()
+                    texts.append(text)
+            else:
+                texts = []
+                for path in tqdm.tqdm(paths):
+                    data_str = ''
+                    with lzma.open(path, 'r') as f:
+                        for line in f:
+                            line_text = line.decode('UTF-8').strip()
+                            if line_text != '\n':
+                                data_str += f'{line_text} '
+                    texts.append(data_str)
             
             for text in texts:
                 doc = tokenizer(text)
@@ -299,6 +310,7 @@ if __name__ == '__main__':
 
     # Data
     parser.add_argument('--load_babylm_config', default='babylm_100M-poc', type=str) # The babylm dataset to match
+    # parser.add_argument('--load_babylm_config', default='openwebtext-poc', type=str) # The babylm dataset to match
     parser.add_argument('--match_type', default='construct', type=str) # vocab, sent_len, construct
 
     # Subsampling
