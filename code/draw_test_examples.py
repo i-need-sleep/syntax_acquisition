@@ -37,6 +37,7 @@ def draw_test_examples():
         sents = doc.sentences[1: -1]
         for sent in sents:
             out.append(sent.text)
+            break
 
     df = pd.DataFrame({
         'original': out,
