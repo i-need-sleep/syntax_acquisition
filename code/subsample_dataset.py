@@ -35,6 +35,8 @@ def subsample(args):
     elif args.match_type == 'sent_len':
         tokenizer, lens = get_sent_len_from_config(args.load_babylm_config, args)
         print(lens)
+        if 'openwebtext' in args.config:
+            return
         subsample = subsample_sent_len(tokenizer, lens, args)
     elif args.match_type == 'construct':
         consts = get_consts_from_config(args.load_babylm_config, args)
@@ -123,7 +125,7 @@ def get_sent_len_from_config(config, args):
     with open(config_path, 'r', encoding="utf-8") as f:
         config_data = json.load(f)
 
-    save_path = f'{globals.DATA_DIR}/subsampled/sent_len_counts.json'
+    save_path = f'{globals.DATA_DIR}/subsampled/sent_len_counts_{args.name}.json'
     tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
 
     try:
@@ -160,7 +162,7 @@ def get_sent_len_from_config(config, args):
                 print(f'Saving at {save_path}')
                 with open(save_path, 'w') as f:
                     json.dump(out, f)
-            
+        
     return tokenizer, out
 
 def subsample_sent_len(tokenizer, lens, args):

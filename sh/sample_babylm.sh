@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=subsample_const       # 任务名
+#SBATCH --job-name=sample_babylm       # 任务名
 #SBATCH --nodes=1                   # 这里不用动 多节点脚本请查官方文档
 #SBATCH --ntasks=1                  # 这里不用动 多任务脚本请查官方文档
 #SBATCH --cpus-per-task=4           # 要几块CPU (一般4块就够用了)
@@ -19,7 +19,5 @@ echo "START"               # 输出起始信息
 source /apps/local/anaconda3/bin/activate tim          # 调用 virtual env
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 export HF_HOME=/l/users/yichen.huang/misc/cache
-python -u subsample_dataset.py \
-    --load_babylm_config babylm_100M-poc \
-    --match_type construct
+python -u draw_test_examples.py
 echo "FINISH"                       # 输出起始信息

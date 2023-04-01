@@ -22,6 +22,6 @@ source /apps/local/anaconda3/bin/activate tim          # 调用 virtual env
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 export HF_HOME=/l/users/yichen.huang/misc/cache
 python -u pretrain.py \
-    --name poc2 \
+    --name poc1 \
     --dataset subsample_vocab
 echo "FINISH"                       # 输出起始信息

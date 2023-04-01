@@ -21,8 +21,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 export HF_HOME=/l/users/yichen.huang/misc/cache
 python -u subsample_dataset.py \
     --load_babylm_config babylm_100M-poc \
-    --name 0
+    --name 0 \
+    --match_type vocab
 python -u subsample_dataset.py \
     --load_babylm_config babylm_100M-poc \
-    --name 1
+    --name 1 \
+    --match_type vocab
 echo "FINISH"                       # 输出起始信息

@@ -25,14 +25,14 @@ def draw_test_examples():
 
     out = []
     for batch_idx, batch in tqdm.tqdm(enumerate(test_loader)):
-        if batch_idx > 5000:
+        if batch_idx > 2000:
             break
 
         batch = torch.tensor(batch).tolist()
         text = tokenizer.decode(batch)
 
         doc = parser(text)
-        sents = doc.sentences[1: -1]
+        sents = doc.sentences[-2: -1]
         for sent in sents:
             out.append(sent.text)
 

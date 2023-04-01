@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=subsample_const       # 任务名
+#SBATCH --job-name=get_openwebtext_sent_len_dist       # 任务名
 #SBATCH --nodes=1                   # 这里不用动 多节点脚本请查官方文档
 #SBATCH --ntasks=1                  # 这里不用动 多任务脚本请查官方文档
 #SBATCH --cpus-per-task=4           # 要几块CPU (一般4块就够用了)
@@ -21,5 +21,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 export HF_HOME=/l/users/yichen.huang/misc/cache
 python -u subsample_dataset.py \
     --load_babylm_config babylm_100M-poc \
-    --match_type construct
+    --match_type sent_len \
+    --load_babylm_config openwebtext-poc \
+    --name openbwebtext_dist
 echo "FINISH"                       # 输出起始信息
