@@ -32,7 +32,9 @@ def draw_test_examples():
         text = tokenizer.decode(batch)
 
         doc = parser(text)
-        sents = doc.sentences[-2: -1]
+        if len(doc) <= 3:
+            continue
+        sents = doc.sentences[1: -1]
         for sent in sents:
             out.append(sent.text)
 
