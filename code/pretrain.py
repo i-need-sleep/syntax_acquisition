@@ -54,7 +54,7 @@ def train(args):
                 f.write(text_dev)
             train_data_paths, dev_data_paths = [train_path], [dev_path]
         elif args.dataset == 'subsample_sent_len':
-            data_path = f'{utils.globals.DATA_DIR}/subsampled/sent_len.txt'
+            data_path = f'{utils.globals.DATA_DIR}/subsampled/sent_len_0.txt'
             with open(data_path, 'r') as f:
                 text = f.read()
             text_train, text_dev = text[: -100], text[-100: ]
