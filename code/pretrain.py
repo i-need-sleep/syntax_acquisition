@@ -53,6 +53,18 @@ def train(args):
             with open(dev_path, 'w') as f:
                 f.write(text_dev)
             train_data_paths, dev_data_paths = [train_path], [dev_path]
+        elif args.dataset == 'subsample_sent_len':
+            data_path = f'{utils.globals.DATA_DIR}/subsampled/sent_len.txt'
+            with open(data_path, 'r') as f:
+                text = f.read()
+            text_train, text_dev = text[: -100], text[-100: ]
+            train_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_train.txt'
+            dev_path = f'{utils.globals.DATA_DIR}/subsampled/vocab_dev.txt'
+            with open(train_path, 'w') as f:
+                f.write(text_train)
+            with open(dev_path, 'w') as f:
+                f.write(text_dev)
+            train_data_paths, dev_data_paths = [train_path], [dev_path]
         else:
             raise NotImplementedError
         
