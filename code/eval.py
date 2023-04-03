@@ -41,6 +41,21 @@ def eval_one(dir, parent, checkpoint, args):
     print(dir)
     perplexity = evaluate.load("./utils/perplexity.py",  module_type= "measurement") #, experiment_id=datetime.datetime.now())
 
+    # Eval annotated babyLM
+    babylm_df_out, babylm_acc, babylm_len = eval_babylm(dir, perplexity, args)
+    print(f'BabyLM accuracy: {babylm_acc} out of {babylm_len} pairs')
+    save_dir = f'{globals.OUT_DIR}/{parent}/babyLM/{checkpoint}.csv'
+    print(f'Saving at: {save_dir}')
+    try:
+        os.mkdir(f'{globals.OUT_DIR}/{parent}')
+    except:
+        pass
+    try:
+        os.mkdir(f'{globals.OUT_DIR}/{parent}/babyLM')
+    except:
+        pass
+    babylm_df_out.to_csv(save_dir)
+
     # Eval SVA
     colorless_df_out, accuracy, test_len = eval_colorless(dir, perplexity, args)
     print(f'SVA accuracy: {accuracy} out of {test_len} pairs')
@@ -68,6 +83,32 @@ def eval_one(dir, parent, checkpoint, args):
     syneval_out.to_csv(save_dir)
 
     return accs
+
+def eval_babylm(dir, perplexity, args):
+    df = pd.read_excel(f'{globals.DATA_DIR}/babylm_eval/annotated.xlsx')
+
+    if args.debug:
+        df = df.truncate(after=9)
+
+    scores_original = perplexity.compute(data=df['original'], model_id=dir)['perplexities']
+    scores_altered = perplexity.compute(data=df['altered'], model_id=dir)['perplexities']
+    
+    preds = []
+    n_correct, n_pred = 0, len(df)
+
+    for i in range(0, n_pred):
+        if scores_original[i] > scores_altered[i]:
+            preds += [0]
+        else:
+            preds += [1]
+            n_correct += 1
+
+    df['preds'] = preds
+    df['perplexity_original'] = scores_original
+    df['perplexity_altered'] = scores_altered
+    
+    accuracy = n_correct / n_pred
+    return df, accuracy, n_pred
 
 def eval_colorless(dir, perplexity, args):
     df = utils.data_utils.load_colorless_green_rnn()
